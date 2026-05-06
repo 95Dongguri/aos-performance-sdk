@@ -23,9 +23,11 @@
 - 특정 화면 (예: 리스트, WebView 화면)에서만 FrameTracker 활성화
 - 릴리스 환경에서는 샘플링 기반 수집 권장
 
-## 샘플 앱
+## 샘플 앱·영상
 
 리포지토리의 `app` 모듈에 **Application 초기화**, **FrameTracker**, **WebView 연동**, **무거운 리스트(jank 유도)** 예제가 있습니다.
+
+[시현 영상](./demo.gif)
 
 ## 제한 사항·주의
 
