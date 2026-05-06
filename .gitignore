@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Local machine config (SDK path 등)
+local.properties
+
+# OS
+.DS_Store
+
+# Kotlin
+.kotlin/
+
+# Keystore (실수 업로드 방지)
+*.jks
+*.keystore

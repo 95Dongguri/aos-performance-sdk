@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Performance sample</string>
+    <string name="main_title">Performance SDK demo</string>
+    <string name="open_webview">Open WebView (rAF metrics)</string>
+    <string name="open_jank_list">Open heavy list (jank)</string>
+</resources>
