@@ -1,6 +1,36 @@
-# Performance SDK (`performance-sdk`)
+## Why Performance SDK?
 
-Android용 경량 성능 측정 라이브러리입니다. **네이티브 프레임 간격(Choreographer)** 과 **WebView `requestAnimationFrame` 간격**을 수집해 FPS·지연(jank) 비율·상태 등을 집계합니다.
+기존 Firebase Performance Monitoring은 다음과 같은 한계가 있다고 판단했습니다.
+
+- 프레임 단위의 세밀한 jank 분석이 어려움
+- WebView 렌더링 성능 측정 지원 부족
+- 커스터마이징 및 경량화 한계
+
+이러한 문제를 해결하기 위해, 
+네이티브 + WebView 성능을 통합적으로 측정할 수 있는 경량 SDK를 개발했습니다.
+
+## Key Features
+
+- 📱 디바이스 refresh rate 기반 프레임 budget 계산
+- 🎯 최근 60프레임 기준 jankRate 계산 (실시간 체감 성능 반영)
+- 🌐 WebView requestAnimationFrame 기반 렌더링 측정
+- 🧩 Native + WebView 통합 성능 분석
+- ⚡ 경량 SDK (Firebase 대비 낮은 오버헤드)
+
+## Recommended Usage
+
+- 디버그 빌드에서 DebugOverlay를 활용해 실시간 성능 모니터링
+- 특정 화면 (예: 리스트, WebView 화면)에서만 FrameTracker 활성화
+- 릴리스 환경에서는 샘플링 기반 수집 권장
+
+## 샘플 앱
+
+리포지토리의 `app` 모듈에 **Application 초기화**, **FrameTracker**, **WebView 연동**, **무거운 리스트(jank 유도)** 예제가 있습니다.
+
+## 제한 사항·주의
+
+- WebView `JavascriptInterface`는 **신뢰할 수 있는 콘텐츠**에 사용하는 것이 안전합니다.
+- 오버레이는 **디버그/개발 목적**에 가깝습니다. 릴리스 빌드에서는 표시 여부를 앱 정책에 맞게 제어하세요.
 
 ## 요구 사항
 
@@ -33,7 +63,7 @@ dependencies {
 }
 ```
 
-## 빠른 시작
+## Get Started
 
 ### 1) 초기화 (`Application`)
 
@@ -107,7 +137,7 @@ val aggregator = PerformanceAggregator()
 aggregator.getMetrics()
 ```
 
-## 디버그 오버레이 (`DebugOverlay`)
+## DebugOverlay
 
 액티비티 **윈도우 decor**에 작은 텍스트 오버레이를 붙입니다. **`SYSTEM_ALERT_WINDOW` 권한은 필요 없습니다.**
 
@@ -129,10 +159,11 @@ overlay.hide()
 - **최근 최대 60프레임**에 대해 `jankRate = (jank 프레임 수) / (해당 윈도우 프레임 수)` 입니다.
 - 샘플이 60개 미만이면 현재까지 쌓인 개수로 나눕니다.
 
-### Jank 판정 (네이티브 프레임)
+### `Jank` 판정 (네이티브 프레임)
 
 - `PerformanceAggregator` 내부에서 **`frameTimeMs > JANK_THRESHOLD_MS`** 이면 jank로 카운트합니다. (현재 임계값은 소스의 상수 참고)
 - 60Hz에서 정상 간격이 약 **16.67ms**인 경우, 임계값이 **16ms**이면 정상 프레임도 jank로 잡힐 수 있습니다. 운영 기준에 맞게 상수 조정을 검토하세요.
+  * `현 기준 임계값 17로 설정하였습니다.`
 
 ### `PerformanceState`
 
@@ -142,36 +173,6 @@ overlay.hide()
 - `fps >= 45 && jankRate < 0.15` → `WARNING`
 - 그 외 → `BAD`
 
-## 패키지 구조 (소스)
-
-```
-com.aos.performance.sdk              → PerformanceMonitor (진입점)
-com.aos.performance.sdk.config       → PerformanceConfig
-com.aos.performance.sdk.metrics    → PerformanceAggregator, PerformanceMetrics, PerformanceState
-com.aos.performance.sdk.frame      → FrameTracker
-com.aos.performance.sdk.webview    → WebPerformanceBridge, JsBridge, WebPerformanceData
-com.aos.performance.sdk.overlay    → DebugOverlay
-```
-
 ## R8 / ProGuard
 
 라이브러리는 `consumer-rules.pro`로 **`JsBridge`의 `@JavascriptInterface`** 가 난독화로 제거되지 않도록 규칙을 포함합니다. 앱에서 R8을 켠 경우에도 소비자 쪽에 전달됩니다.
-
-## 스레딩 요약
-
-| API | 메인 스레드 |
-|-----|-------------|
-| `PerformanceMonitor.attachWebView` | 필요 |
-| `FrameTracker.start` | 필요 |
-| `DebugOverlay.show` | 필요 |
-| `PerformanceMonitor.stop` / `detachWebView` | `detachWebView`는 메인으로 포스팅됨 |
-| `aggregator.getMetrics()` | 락 사용, 어느 스레드에서도 호출 가능 |
-
-## 샘플 앱
-
-리포지토리의 `app` 모듈에 **Application 초기화**, **FrameTracker**, **WebView 연동**, **무거운 리스트(jank 유도)** 예제가 있습니다.
-
-## 제한 사항·주의
-
-- WebView `JavascriptInterface`는 **신뢰할 수 있는 콘텐츠**에 사용하는 것이 안전합니다.
-- 오버레이는 **디버그/개발 목적**에 가깝습니다. 릴리스 빌드에서는 표시 여부를 앱 정책에 맞게 제어하세요.
